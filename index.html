@@ -112,31 +112,34 @@
             <i class="bi bi-lightning-charge-fill me-2 accent-red-pulse"></i>
             Quick Access
           </h3>
-          <div class="quick-links-grid">
-            <a href="#" class="quick-link-card" data-option="1">
-              <i class="bi bi-person-plus-fill quick-link-icon"></i>
-              <span class="quick-link-text">Adding Natural Born Child</span>
-            </a>
-            <a href="#" class="quick-link-card" data-option="3">
-              <i class="bi bi-heart-fill quick-link-icon"></i>
-              <span class="quick-link-text">Adding Spouse</span>
-            </a>
-            <a href="#" class="quick-link-card" data-option="14">
-              <i class="bi bi-people-fill quick-link-icon"></i>
-              <span class="quick-link-text">Adding Domestic Partner</span>
-            </a>
-            <a href="#" class="quick-link-card" data-option="23">
-              <i class="bi bi-person-badge quick-link-icon"></i>
-              <span class="quick-link-text">Adding Travel Companion</span>
-            </a>
-            <a href="#" class="quick-link-card" data-option="40">
-              <i class="bi bi-file-earmark-text-fill quick-link-icon"></i>
-              <span class="quick-link-text">How to Index Documents</span>
-            </a>
-            <a href="#" class="quick-link-card" data-section="dependent-action">
-              <i class="bi bi-list-ul quick-link-icon"></i>
-              <span class="quick-link-text">View All Actions</span>
-            </a>
+          <div id="dynamic-quick-links">
+            <div id="favorites" class="quick-links-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 1rem;"></div>
+            <div id="static-fallback" class="quick-links-grid" style="display:none;">
+              <a href="#" class="quick-link-card" data-option="1">
+                <i class="bi bi-person-plus-fill quick-link-icon"></i>
+                <span class="quick-link-text">Adding Natural Born Child</span>
+              </a>
+              <a href="#" class="quick-link-card" data-option="3">
+                <i class="bi bi-heart-fill quick-link-icon"></i>
+                <span class="quick-link-text">Adding Spouse</span>
+              </a>
+              <a href="#" class="quick-link-card" data-option="14">
+                <i class="bi bi-people-fill quick-link-icon"></i>
+                <span class="quick-link-text">Adding Domestic Partner</span>
+              </a>
+              <a href="#" class="quick-link-card" data-option="23">
+                <i class="bi bi-person-badge quick-link-icon"></i>
+                <span class="quick-link-text">Adding Travel Companion</span>
+              </a>
+              <a href="#" class="quick-link-card" data-option="40">
+                <i class="bi bi-file-earmark-text-fill quick-link-icon"></i>
+                <span class="quick-link-text">How to Index Documents</span>
+              </a>
+              <a href="#" class="quick-link-card" data-section="dependent-action">
+                <i class="bi bi-list-ul quick-link-icon"></i>
+                <span class="quick-link-text">View All Actions</span>
+              </a>
+            </div>
           </div>
         </div>
 
@@ -752,7 +755,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<!-- Initialize Select2 -->
+<!-- Initialize Select2 and dynamic quick access -->
 <script>
   $(document).ready(function () {
     // Initialize the Select2 dropdown
@@ -762,9 +765,86 @@
       width: '100%'
     });
 
+    // Utilities: localStorage key for favorites
+    const LS_FAV = 'dkb_favorites';
+
+    function getFavorites() {
+      try { return JSON.parse(localStorage.getItem(LS_FAV) || '[]'); } catch (e) { return []; }
+    }
+    function saveFavorites(arr) { localStorage.setItem(LS_FAV, JSON.stringify(arr)); }
+
+    function renderQuickAccess() {
+      const $fav = $('#favorites');
+      $fav.empty();
+
+      const favs = getFavorites();
+      if (favs.length) {
+        // Render as grid; show heading
+        $fav.append('<h5 style="width:100%; margin:0 0 .5rem 0;">Favorites</h5>');
+        favs.forEach(item => {
+          const label = item.label || ($('#optionSelector option[value="' + item.id + '"]').text() || 'Action ' + item.id);
+          const $a = $('<a href="#" class="quick-link-card" data-option="'+item.id+'">')
+            .append('<i class="bi bi-star-fill quick-link-icon" style="color:var(--delta-red);"></i>')
+            .append('<span class="quick-link-text">'+label+'</span>');
+          $fav.append($a);
+        });
+        $('#static-fallback').hide();
+      } else {
+        $('#static-fallback').show();
+      }
+    }
+
+    function toggleFavorite(id, label) {
+      const arr = getFavorites();
+      const exists = arr.find(i => i.id === id);
+      let nowFav = false;
+      if (exists) {
+        const next = arr.filter(i => i.id !== id);
+        saveFavorites(next);
+        nowFav = false;
+      } else {
+        arr.unshift({id: id, label: label});
+        saveFavorites(arr.slice(0,10));
+        nowFav = true;
+      }
+      // Update section visual state if present
+      const $sec = $('#' + id);
+      if ($sec.length) {
+        $sec.toggleClass('favorited', nowFav);
+        const $hdrBtn = $sec.find('.section-favorite-toggle');
+        if ($hdrBtn.length) {
+          $hdrBtn.html(nowFav ? '<i class="bi bi-star-fill"></i> Unfavorite' : '<i class="bi bi-star"></i> Favorite');
+        }
+      }
+      renderQuickAccess();
+    }
+
+    // Render quick access on load
+    renderQuickAccess();
+
+    // Add a Favorite/Unfavorite button to each section header (right-aligned)
+    $('.section').each(function() {
+      const id = $(this).attr('id');
+      const $header = $(this).find('.section-header').first();
+      if (!$header.length) return;
+      if ($header.find('.section-favorite-toggle').length) return; // already added
+      const favs = getFavorites();
+      const isFav = favs.some(i => i.id === id.toString());
+      const $btn = $('<button class="btn btn-sm btn-outline-primary section-favorite-toggle" type="button">')
+        .html(isFav ? '<i class="bi bi-star-fill"></i> Unfavorite' : '<i class="bi bi-star"></i> Favorite')
+        .attr('data-id', id)
+        .css({ 'margin-left': 'auto' });
+      $header.append($btn);
+      // Mark section visually if it's already a favorite
+      if (isFav) {
+        $(this).addClass('favorited');
+      }
+    });
+
     // Render selected section into the in-page results area so results stay on the same page
     $('#optionSelector').on('change', function () {
       const selected = $(this).val();
+      const label = $('#optionSelector option:selected').text();
       const $results = $('#search-results');
       $results.empty();
       if (selected) {
@@ -773,8 +853,13 @@
           // Clone the section so we don't move the original DOM node
           const $clone = $section.clone(true);
           $clone.show().addClass('show');
+
+          // Note: favorite controls are provided on the section headers only
+
           $results.append($clone);
           $results.fadeIn(250);
+
+          // no recent tracking — only favorites are used for quick access
 
           // Keep the user on the same search pane — hide the big content list to avoid duplication
           $('#content-sections').hide();
@@ -816,8 +901,8 @@
       }
     });
 
-    // Quick link cards handling
-    $('.quick-link-card').on('click', function(e) {
+    // Quick link cards handling (use event delegation so dynamically added items work)
+    $(document).on('click', '.quick-link-card', function(e) {
       e.preventDefault();
       
       const option = $(this).data('option');
@@ -847,6 +932,23 @@
         
         $('html, body').animate({ scrollTop: $('#dependent-action').offset().top - 100 }, 600);
       }
+    });
+
+    // (Removed cloned-result favorite toggle — header buttons manage favorites now)
+
+    // Toggle from section header buttons (right-aligned)
+    $(document).on('click', '.section-favorite-toggle', function(e) {
+      e.preventDefault();
+      const id = $(this).attr('data-id');
+      const label = $(this).closest('.section').find('h3').text().trim() || ($('#optionSelector option[value="'+id+'"]').text() || 'Action ' + id);
+      toggleFavorite(id, label);
+      const nowFav = getFavorites().some(i => i.id === id.toString());
+      if (nowFav) {
+        $(this).html('<i class="bi bi-star-fill"></i> Unfavorite');
+      } else {
+        $(this).html('<i class="bi bi-star"></i> Favorite');
+      }
+      setTimeout(() => { renderQuickAccess(); }, 200);
     });
 
     // Ensure every section list item has a check icon at the start

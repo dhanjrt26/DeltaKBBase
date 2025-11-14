@@ -840,6 +840,21 @@ body {
   border-left-width: 8px;
 }
 
+/* Favorited section visual state */
+.section.favorited {
+  border-left-color: var(--delta-red);
+  box-shadow: 0 12px 36px rgba(224,26,51,0.08);
+}
+
+.section.favorited .section-header {
+  background: linear-gradient(90deg, rgba(224,26,51,0.04), rgba(224,26,51,0.01));
+  border-bottom-color: rgba(224,26,51,0.08);
+}
+
+.section.favorited .section-badge {
+  box-shadow: 0 6px 18px rgba(224,26,51,0.12);
+}
+
 .section-header {
   display: flex;
   align-items: center;
