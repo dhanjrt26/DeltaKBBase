@@ -55,6 +55,7 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-blue: 0 10px 25px -5px rgba(0, 87, 184, 0.2);
+  --shadow-red: 0 10px 25px -5px rgba(224, 26, 51, 0.2);
   
   /* Transitions */
   --transition-fast: 150ms ease-in-out;
@@ -1072,6 +1073,90 @@ body {
   }
 }
 
+@keyframes airplaneFly {
+  0% {
+    transform: translateX(-150px) translateY(200px) rotate(20deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(50vw) translateY(-150px) rotate(20deg);
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(100vw + 150px)) translateY(-400px) rotate(20deg);
+    opacity: 0;
+  }
+}
+
+/* Airplane 2: Same direction as plane 1, different timing */
+@keyframes airplaneFly2 {
+  0% {
+    transform: translateX(-150px) translateY(200px) rotate(20deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateX(50vw) translateY(-150px) rotate(20deg);
+  }
+  95% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(calc(100vw + 150px)) translateY(-400px) rotate(20deg);
+    opacity: 0;
+  }
+}
+
+/* Airplane 3: Random direction changes - erratic flight pattern */
+@keyframes airplaneFly3 {
+  0% {
+    transform: translateX(-150px) translateY(200px) rotate(20deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.75;
+  }
+  50% {
+    transform: translateX(50vw) translateY(-150px) rotate(20deg);
+  }
+  95% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translateX(calc(100vw + 150px)) translateY(-400px) rotate(20deg);
+    opacity: 0;
+  }
+}
+
+@keyframes redAccentPulse {
+  0%, 100% {
+    color: var(--delta-red);
+    text-shadow: 0 0 0 rgba(224, 26, 51, 0);
+  }
+  50% {
+    color: var(--delta-red);
+    text-shadow: 0 0 12px rgba(224, 26, 51, 0.6);
+  }
+}
+
+@keyframes accentGlow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(224, 26, 51, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(224, 26, 51, 0.5);
+  }
+}
+
 /* ============================================
    Scrollbar Styling
    ============================================ */
@@ -1091,6 +1176,54 @@ body {
 
 .main-content-wrapper::-webkit-scrollbar-thumb:hover {
   background: var(--delta-blue);
+}
+
+/* ============================================
+   Red Accent Branding Elements
+   ============================================ */
+
+.accent-red {
+  color: var(--delta-red);
+}
+
+.accent-red-bg {
+  background: linear-gradient(135deg, var(--delta-red) 0%, var(--delta-red-dark) 100%);
+  color: var(--text-white);
+  box-shadow: var(--shadow-red);
+}
+
+.accent-red-pulse {
+  animation: redAccentPulse 2.5s ease-in-out infinite;
+}
+
+.accent-red-glow {
+  animation: accentGlow 2s ease-in-out infinite;
+}
+
+/* Airplane animation element */
+.airplane-element {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  font-size: 3.5rem;
+  z-index: 500;
+  pointer-events: none;
+  opacity: 0.85;
+  color: var(--delta-red);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2)) drop-shadow(0 0 12px rgba(224, 26, 51, 0.3));
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.airplane-element.plane-1 {
+  animation: airplaneFly 14s linear infinite;
+}
+
+.airplane-element.plane-2 {
+  animation: airplaneFly2 14s linear infinite 4s;
+}
+
+.airplane-element.plane-3 {
+  animation: airplaneFly3 14s linear infinite 8s;
 }
 
 /* ============================================
@@ -1129,6 +1262,22 @@ body {
   .main-content-wrapper {
     margin-left: 0;
     padding: var(--spacing-lg);
+  }
+
+  .airplane-element {
+    font-size: 2.5rem;
+  }
+
+  .airplane-element.plane-1 {
+    animation: airplaneFly 16s linear infinite;
+  }
+
+  .airplane-element.plane-2 {
+    animation: airplaneFly2 16s linear infinite 4s;
+  }
+
+  .airplane-element.plane-3 {
+    animation: airplaneFly3 16s linear infinite 8s;
   }
 
   /* Mobile menu toggle button visible on small screens */
@@ -1176,6 +1325,10 @@ body {
 
 @media (max-width: 480px) {
   /* hero-related responsive rules removed (hero section is not present in HTML) */
+  
+  .airplane-element {
+    display: none;
+  }
   
   .homepage-section {
     padding: var(--spacing-md);
